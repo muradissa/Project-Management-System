@@ -1,1 +1,10 @@
 > npm init -y
+
+MongoDB
+muradissa1234
+sqt2G0Plaw7JGDR1
+
+IP Access List : 147.235.222.179/32
+Description : My IP Address
+
+#note : change version of graphql "+16" to => "graphql": "^15.8.0"
