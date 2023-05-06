@@ -1,80 +1,118 @@
-import { useState } from "react";
-import { useMutation } from "@apollo/client";
-import { GET_PROJECT } from "../queries/projectQueries";
-import { UPDATE_PROJECT } from "../mutations/projectMutations";
+import { useState } from 'react';
+import { FaUser } from 'react-icons/fa';
+import { useMutation } from '@apollo/client';
+import { ADD_CLIENT } from '../mutations/clientMutations';
+import { GET_CLIENTS } from '../queries/clientQueries';
 
-export default function EditProjectForm({ project }) {
-  const [name, setName] = useState(project.name);
-  const [description, setDescription] = useState(project.description);
-  const [status, setStatus] = useState(() => {
-    switch (project.status) {
-      case "Not Started":
-        return "new";
-      case "In Progress":
-        return "progress";
-      case "Completed":
-        return "completed";
-      default:
-        throw new Error(`Unknown status: ${project.status}`);
-    }
-  });
+export default function AddClientModal() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
 
-  const [updateProject] = useMutation(UPDATE_PROJECT, {
-    variables: { id: project.id, name, description, status },
-    refetchQueries: [{ query: GET_PROJECT, variables: { id: project.id } }],
+  const [addClient] = useMutation(ADD_CLIENT, {
+    variables: { name, email, phone },
+    update(cache, { data: { addClient } }) {
+      const { clients } = cache.readQuery({ query: GET_CLIENTS });
+
+      cache.writeQuery({
+        query: GET_CLIENTS,
+        data: { clients: [...clients, addClient] },
+      });
+    },
   });
 
   const onSubmit = (e) => {
     e.preventDefault();
 
-    if (!name || !description || !status) {
-      return alert("Please fill out all fields");
+    if (name === '' || email === '' || phone === '') {
+      return alert('Please fill in all fields');
     }
 
-    updateProject(name, description, status);
+    addClient(name, email, phone);
+
+    setName('');
+    setEmail('');
+    setPhone('');
   };
 
   return (
-    <div className="mt-5">
-      <h3>Update Project Details</h3>
-      <form onSubmit={onSubmit}>
-        <div className="mb-3">
-          <label className="form-label">Name</label>
-          <input
-            type="text"
-            className="form-control"
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+    <>
+      <button
+        type='button'
+        className='btn btn-secondary'
+        data-bs-toggle='modal'
+        data-bs-target='#addClientModal'
+      >
+        <div className='d-flex align-items-center'>
+          <FaUser className='icon' />
+          <div>Add Client</div>
         </div>
-        <div className="mb-3">
-          <label className="form-label">Description</label>
-          <textarea
-            className="form-control"
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          ></textarea>
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Status</label>
-          <select
-            id="status"
-            className="form-select"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-          >
-            <option value="new">Not Started</option>
-            <option value="progress">In Progress</option>
-            <option value="completed">Completed</option>
-          </select>
-        </div>
+      </button>
 
-        <button type="submit" className="btn btn-primary">
-          Submit
-        </button>
-      </form>
-    </div>
+      <div
+        className='modal fade'
+        id='addClientModal'
+        aria-labelledby='addClientModalLabel'
+        aria-hidden='true'
+      >
+        <div className='modal-dialog'>
+          <div className='modal-content'>
+            <div className='modal-header'>
+              <h5 className='modal-title' id='addClientModalLabel'>
+                Add Client
+              </h5>
+              <button
+                type='button'
+                className='btn-close'
+                data-bs-dismiss='modal'
+                aria-label='Close'
+              ></button>
+            </div>
+            <div className='modal-body'>
+              <form onSubmit={onSubmit}>
+                <div className='mb-3'>
+                  <label className='form-label'>Name</label>
+                  <input
+                    type='text'
+                    className='form-control'
+                    id='name'
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+                <div className='mb-3'>
+                  <label className='form-label'>Email</label>
+                  <input
+                    type='email'
+                    className='form-control'
+                    id='email'
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className='mb-3'>
+                  <label className='form-label'>Phone</label>
+                  <input
+                    type='text'
+                    className='form-control'
+                    id='phone'
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                </div>
+
+                <button
+                  type='submit'
+                  data-bs-dismiss='modal'
+                  className='btn btn-secondary'
+                >
+                  Submit
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

@@ -15,6 +15,7 @@ export default function Projects() {
         <div className='row mt-4'>
           {data.projects.map((project) => (
             <ProjectCard key={project.id} project={project} />
+            // <h1>asds</h1>
           ))}
         </div>
       ) : (
